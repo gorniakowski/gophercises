@@ -1,19 +1,25 @@
 package main
 
 import (
+	"encoding/xml"
 	"flag"
+	"fmt"
 	"gophercises/ex4/HtmlLinkParser"
 	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 )
+
+const xmlns = "sitemaps.org"
 
 type loc struct {
 	Value string `xml:"loc"`
 }
 type urlset struct {
-	Urls []loc `xml:"url"`
+	Urls  []loc  `xml:"url"`
+	Xmlns string `xml:"xmlns,attr"`
 }
 
 func main() {
@@ -22,9 +28,20 @@ func main() {
 	flag.Parse()
 	pages := bfs(*urlFlag, *maxDepth)
 
-	for _, page := range pages {
-		println(page)
+	toXML := urlset{
+		Xmlns: xmlns,
 	}
+
+	for _, page := range pages {
+		toXML.Urls = append(toXML.Urls, loc{page})
+	}
+	fmt.Print(xml.Header)
+	enc := xml.NewEncoder(os.Stdout)
+	enc.Indent("", "  ")
+	if err := enc.Encode(toXML); err != nil {
+		panic(err)
+	}
+
 }
 
 func get(urlStr string) []string {
