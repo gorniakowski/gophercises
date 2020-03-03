@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"fmt"
+	"gophercises/ex7/task/db"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -17,6 +17,7 @@ var addCmd = &cobra.Command{
 	Long:  `add adds a task to TODO`,
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("This is a fake add command: %s\n", strings.Join(args, " "))
+		task := strings.Join(args, " ")
+		db.Add(task)
 	},
 }

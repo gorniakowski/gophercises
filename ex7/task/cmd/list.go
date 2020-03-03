@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"gophercises/ex7/task/db"
 
 	"github.com/spf13/cobra"
 )
@@ -15,6 +16,6 @@ var listCmd = &cobra.Command{
 	Short: "print all tasks",
 	Long:  `This prints all the tasks in the TODO`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("This is a fake list command")
+		fmt.Print(db.List())
 	},
 }
