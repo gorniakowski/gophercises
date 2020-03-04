@@ -31,16 +31,18 @@ func Initialize(dbName string) error {
 func Close() {
 	db.Close()
 }
-func Add(task string) error {
-	var err error
-	db.Update(func(tx *bolt.Tx) error {
+func Add(task string) (int, error) {
+	var id int
+	err := db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(taskList))
-		id, _ := b.NextSequence()
-		taskID := itob(int(id))
-		err = b.Put(taskID, []byte(task))
-		return err
+		id64, _ := b.NextSequence()
+		taskID := itob(int(id64))
+		return b.Put(taskID, []byte(task))
 	})
-	return err
+	if err != nil {
+		return -1, err
+	}
+	return id, nil
 }
 
 func List() string {
@@ -56,6 +58,15 @@ func List() string {
 		return nil
 	})
 	return result
+}
+
+func Remove(id int) error {
+	return db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(taskList))
+		key := itob(id)
+		err := b.Delete(key)
+		return err
+	})
 }
 
 // itob returns an 8-byte big endian representation of v.

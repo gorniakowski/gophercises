@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"gophercises/ex7/task/db"
 	"strconv"
 
 	"github.com/spf13/cobra"
@@ -27,6 +28,11 @@ var doCmd = &cobra.Command{
 			}
 
 		}
-		fmt.Println(ids)
+		for _, id := range ids {
+			err := db.Remove(id)
+			if err != nil {
+				fmt.Println(err)
+			}
+		}
 	},
 }

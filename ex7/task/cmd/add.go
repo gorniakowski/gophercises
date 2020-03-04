@@ -18,6 +18,9 @@ var addCmd = &cobra.Command{
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		task := strings.Join(args, " ")
-		db.Add(task)
+		_, err := db.Add(task)
+		if err != nil {
+			panic(err)
+		}
 	},
 }
