@@ -28,11 +28,19 @@ var doCmd = &cobra.Command{
 			}
 
 		}
+		tasks := db.List()
 		for _, id := range ids {
-			err := db.Remove(id)
-			if err != nil {
-				fmt.Println(err)
+			if id < 1 || id > len(tasks) {
+				fmt.Printf("Invalid Id: %v\n", id)
+				continue
 			}
+			task := tasks[id-1]
+			err := db.Remove(task.Key)
+			if err != nil {
+				fmt.Print("Something went wrong:", err)
+				continue
+			}
+			fmt.Println("Removed task: ", task.Value)
 		}
 	},
 }

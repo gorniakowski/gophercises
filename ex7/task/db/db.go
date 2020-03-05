@@ -2,7 +2,6 @@ package db
 
 import (
 	"encoding/binary"
-	"fmt"
 
 	"github.com/boltdb/bolt"
 )
@@ -45,14 +44,15 @@ func Add(task string) (int, error) {
 	return id, nil
 }
 
-func List() string {
-	result := "TODO:\n"
+func List() []Task {
+	var result []Task
 	db.View(func(tx *bolt.Tx) error {
 		// Assume bucket exists and has keys
 		b := tx.Bucket([]byte(taskList))
 
 		b.ForEach(func(k, v []byte) error {
-			result += fmt.Sprintf("%v   %s\n", btoi(k), v)
+			task := Task{Key: btoi(k), Value: string(v)}
+			result = append(result, task)
 			return nil
 		})
 		return nil
