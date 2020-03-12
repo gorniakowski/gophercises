@@ -67,6 +67,20 @@ func (db *DB) AllPhones() ([]Phone, error) {
 	return result, nil
 }
 
+func (db *DB) FindPhone(number string) (*Phone, error) {
+	var p Phone
+	row := db.db.QueryRow("SELECT * FROM phone_numbers WHERE value=$1", number)
+	err := row.Scan(&p.ID, &p.Number)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+
+	}
+	return &p, nil
+}
+
 func Reset(driverName, dataSource, dbName string) error {
 	db, err := sql.Open(driverName, dataSource)
 	if err != nil {
@@ -128,31 +142,18 @@ func insertPhone(db *sql.DB, phone string) (int, error) {
 	return id, nil
 
 }
-func deletePhone(db *sql.DB, id int) error {
+func (db *DB) DeletePhone(id int) error {
 	statement := `DELETE FROM phone_numbers WHERE id=$1`
-	_, err := db.Exec(statement, id)
+	_, err := db.db.Exec(statement, id)
 	return err
 }
 
-func updatePhone(db *sql.DB, p Phone) error {
+func (db *DB) UpdatePhone(p *Phone) error {
 	statement := `UPDATE phone_numbers SET value=$2 WHERE id=$1`
-	_, err := db.Exec(statement, p.ID, p.Number)
+	_, err := db.db.Exec(statement, p.ID, p.Number)
 	return err
 }
 
-func findPhone(db *sql.DB, number string) (*Phone, error) {
-	var p Phone
-	row := db.QueryRow("SELECT * FROM phone_numbers WHERE value=$1", number)
-	err := row.Scan(&p.ID, &p.Number)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, nil
-		}
-		return nil, err
-
-	}
-	return &p, nil
-}
 func getPhone(db *sql.DB, id int) (string, error) {
 	var number string
 	err := db.QueryRow("SELECT value FROM phone_numbers WHERE id=$1", id).Scan(&number)
