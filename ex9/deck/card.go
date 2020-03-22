@@ -2,7 +2,12 @@
 
 package deck
 
-import "fmt"
+import (
+	"fmt"
+	"math/rand"
+	"sort"
+	"time"
+)
 
 type Suit uint8
 
@@ -53,7 +58,7 @@ func (c Card) String() string {
 
 }
 
-func New() []Card {
+func New(opts ...func([]Card) []Card) []Card {
 	var result []Card
 
 	for _, suit := range suits {
@@ -61,6 +66,72 @@ func New() []Card {
 			result = append(result, Card{Suit: suit, Rank: rank})
 		}
 	}
-
+	for _, opt := range opts {
+		result = opt(result)
+	}
 	return result
+}
+
+func DefaultSort(cards []Card) []Card {
+	sort.Slice(cards, Less(cards))
+	return cards
+}
+
+func Sort(less func(cards []Card) func(i, j int) bool) func([]Card) []Card {
+	return func(cards []Card) []Card {
+		sort.Slice(cards, less(cards))
+		return cards
+	}
+}
+
+func Less(cards []Card) func(i, j int) bool {
+	return func(i, j int) bool {
+		return absRank(cards[i]) < absRank(cards[j])
+	}
+}
+
+var shuffleRand = rand.New(rand.NewSource(time.Now().Unix()))
+
+func Schuffle(cards []Card) []Card {
+	result := make([]Card, len(cards))
+	perm := shuffleRand.Perm(len(cards))
+	for i, j := range perm {
+		result[i] = cards[j]
+	}
+	return result
+}
+
+func Jokers(n int) func([]Card) []Card {
+	return func(cards []Card) []Card {
+		for i := 0; i < n; i++ {
+			cards = append(cards, Card{Rank: Rank(i), Suit: Joker})
+		}
+		return cards
+	}
+}
+
+func Filter(f func(card Card) bool) func([]Card) []Card {
+	return func(cards []Card) []Card {
+		var result []Card
+		for _, c := range cards {
+			if !f(c) {
+				result = append(result, c)
+			}
+		}
+		return result
+	}
+}
+
+func Deck(n int) func([]Card) []Card {
+	return func(cards []Card) []Card {
+		var result []Card
+		for i := 0; i < n; i++ {
+			result = append(result, cards...)
+		}
+
+		return result
+	}
+}
+func absRank(c Card) int {
+	return int(c.Suit)*int(maxRank) + int(c.Rank)
 }
